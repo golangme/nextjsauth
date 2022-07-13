@@ -36,10 +36,6 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
-          console.log("auth found", user);
-          console.log("password: " + password);
-          console.log("user.password: " + user?.password);
-          // const user = await prisma.user.findOne({))
           if (user) {
             const isValid = await argon2d.verify(user.password, password);
             console.log("isvalid: ", isValid);
