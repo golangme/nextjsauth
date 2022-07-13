@@ -2,22 +2,12 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// Prisma adapter for NextAuth, optional and can be removed
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "../../../server/db/client";
-import { compare } from "bcrypt";
+
 import argon2d from "argon2";
 
 export const authOptions: NextAuthOptions = {
-  // Configure one or more authentication providers
-  // adapter: PrismaAdapter(prisma),
   providers: [
-    // GithubProvider({
-    //   clientId: process.env.GITHUB_ID,
-    //   clientSecret: process.env.GITHUB_SECRET,
-    // }),
-    // ...add more providers here
-
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -34,25 +24,23 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (user) {
-          try {
-            const isValid = await argon2d.verify(
-              user.password,
-              credentials?.password as string
-            );
-            console.log("isvalid: ", isValid);
-            if (isValid) {
-              return user;
-            }
-          } catch (error) {
-            throw new Error("Invalid credentials1");
+          const isValid = await argon2d.verify(
+            user.password,
+            credentials?.password as string
+          );
+          console.log("isvalid: ", isValid);
+
+          if (!isValid) {
+            return null;
           }
+          return user;
         } else {
-          throw new Error("Invalid credentials2");
+          return null;
         }
       },
     }),
   ],
-  // secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async session({ session, user, token }) {
       return session;
