@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
-import { getSession, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/router";
 
 function Login() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signupkey, setSignUpKey] = useState("");
@@ -35,6 +37,9 @@ function Login() {
         redirect: false,
       });
       console.log(authenthicate);
+      if (!authenthicate?.error) {
+        router.push("/auth");
+      }
     }
   };
   return (

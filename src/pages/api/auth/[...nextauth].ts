@@ -25,32 +25,29 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, _req) {
-        // console.log("");
-        // const { email, password } = JSON.stringify(credentials);
         const email = credentials?.email;
-        const password = credentials?.password || "test";
-        try {
-          const user = await prisma.user.findFirst({
-            where: {
-              email,
-            },
-          });
 
-          if (user) {
-            const isValid = await argon2d.verify(user.password, password);
+        const user = await prisma.user.findFirst({
+          where: {
+            email,
+          },
+        });
+
+        if (user) {
+          try {
+            const isValid = await argon2d.verify(
+              user.password,
+              credentials?.password as string
+            );
             console.log("isvalid: ", isValid);
             if (isValid) {
-              return {
-                user,
-              };
-            } else {
-              throw new Error("Invalid credentials1");
+              return user;
             }
-          } else {
-            throw new Error("Invalid credentials2");
+          } catch (error) {
+            throw new Error("Invalid credentials1");
           }
-        } catch (error) {
-          throw new Error("Invalid credentials3");
+        } else {
+          throw new Error("Invalid credentials2");
         }
       },
     }),
